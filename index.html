@@ -1,13 +1,321 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Gestor de Tráfego</title>
-  </head>
-  <body>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/font/lucide.css" rel="stylesheet">
+    <style>
+        .lucide { width: 1em; height: 1em; }
+    </style>
+</head>
+<body class="bg-gray-50">
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('clientes');
+            const [clientes, setClientes] = useState([
+                {
+                    id: 'CLI001',
+                    nome: 'Empresa ABC Ltda',
+                    contato: 'João Silva',
+                    email: 'joao@empresaabc.com',
+                    telefone: '(11) 99999-1111',
+                    servicos: 'Gestão de Tráfego Facebook/Instagram',
+                    status: 'Ativo',
+                    dataInicio: '2024-01-15',
+                    observacoes: 'Cliente muito satisfeito, renovação provável'
+                },
+                {
+                    id: 'CLI002',
+                    nome: 'Loja XYZ',
+                    contato: 'Maria Santos',
+                    email: 'maria@lojaxyz.com',
+                    telefone: '(21) 88888-2222',
+                    servicos: 'Google Ads + Facebook Ads',
+                    status: 'Ativo',
+                    dataInicio: '2024-03-01',
+                    observacoes: 'Primeiro mês, acompanhar de perto'
+                }
+            ]);
+
+            const [leads, setLeads] = useState([
+                {
+                    id: 'LEAD001',
+                    nomeEmpresa: 'Padaria do Bairro',
+                    contato: 'Ana Paula',
+                    segmento: 'Alimentação',
+                    whatsapp: '(11) 91111-1111',
+                    cidade: 'São Paulo',
+                    origem: 'Instagram',
+                    status: 'Em Contato',
+                    dataCadastro: '2024-06-01',
+                    observacoes: 'Interessada em Facebook Ads'
+                },
+                {
+                    id: 'LEAD002',
+                    nomeEmpresa: 'Clínica Odontológica Sorriso',
+                    contato: 'Dr. Carlos',
+                    segmento: 'Saúde',
+                    whatsapp: '(21) 92222-2222',
+                    cidade: 'Rio de Janeiro',
+                    origem: 'TNG LEADS',
+                    status: 'Proposta Enviada',
+                    dataCadastro: '2024-06-03',
+                    observacoes: 'Aguardando retorno da proposta'
+                }
+            ]);
+
+            const [novoCliente, setNovoCliente] = useState({
+                nome: '', contato: '', email: '', telefone: '', servicos: '', status: 'Ativo', dataInicio: '', observacoes: ''
+            });
+
+            const [novoLead, setNovoLead] = useState({
+                nomeEmpresa: '', contato: '', segmento: '', whatsapp: '', cidade: '', origem: '', status: 'Novo', observacoes: ''
+            });
+
+            const adicionarCliente = () => {
+                if (novoCliente.nome && novoCliente.contato) {
+                    const cliente = {
+                        ...novoCliente,
+                        id: `CLI${String(clientes.length + 1).padStart(3, '0')}`,
+                        dataInicio: novoCliente.dataInicio || new Date().toISOString().split('T')[0]
+                    };
+                    setClientes([...clientes, cliente]);
+                    setNovoCliente({ nome: '', contato: '', email: '', telefone: '', servicos: '', status: 'Ativo', dataInicio: '', observacoes: '' });
+                    setActiveTab('clientes');
+                }
+            };
+
+            const adicionarLead = () => {
+                if (novoLead.nomeEmpresa && novoLead.contato) {
+                    const lead = {
+                        ...novoLead,
+                        id: `LEAD${String(leads.length + 1).padStart(3, '0')}`,
+                        dataCadastro: new Date().toISOString().split('T')[0]
+                    };
+                    setLeads([...leads, lead]);
+                    setNovoLead({ nomeEmpresa: '', contato: '', segmento: '', whatsapp: '', cidade: '', origem: '', status: 'Novo', observacoes: '' });
+                    setActiveTab('leads');
+                }
+            };
+
+            const getStatusColor = (status) => {
+                switch (status) {
+                    case 'Ativo': return 'bg-green-100 text-green-800';
+                    case 'Pausado': return 'bg-yellow-100 text-yellow-800';
+                    case 'Concluído': return 'bg-blue-100 text-blue-800';
+                    case 'Cancelado': return 'bg-red-100 text-red-800';
+                    case 'Novo': return 'bg-blue-100 text-blue-800';
+                    case 'Em Contato': return 'bg-yellow-100 text-yellow-800';
+                    case 'Proposta Enviada': return 'bg-purple-100 text-purple-800';
+                    case 'Negociação': return 'bg-orange-100 text-orange-800';
+                    case 'Convertido': return 'bg-green-100 text-green-800';
+                    case 'Perdido': return 'bg-red-100 text-red-800';
+                    default: return 'bg-gray-100 text-gray-800';
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+                    <div className="max-w-7xl mx-auto">
+                        <header className="mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">CRM Gestor de Tráfego</h1>
+                            <p className="text-gray-600">Sistema de gestão de clientes e prospecção</p>
+                        </header>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                                <div className="p-3 bg-blue-50 rounded-lg mr-4">
+                                    <i className="lucide-users text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Total Clientes</p>
+                                    <p className="text-2xl font-bold text-gray-900">{clientes.length}</p>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                                <div className="p-3 bg-green-50 rounded-lg mr-4">
+                                    <i className="lucide-user-plus text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Total Leads</p>
+                                    <p className="text-2xl font-bold text-gray-900">{leads.length}</p>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                                <div className="p-3 bg-purple-50 rounded-lg mr-4">
+                                    <i className="lucide-bar-chart-3 text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Clientes Ativos</p>
+                                    <p className="text-2xl font-bold text-gray-900">{clientes.filter(c => c.status === 'Ativo').length}</p>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                                <div className="p-3 bg-orange-50 rounded-lg mr-4">
+                                    <i className="lucide-calendar text-orange-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Leads em Negociação</p>
+                                    <p className="text-2xl font-bold text-gray-900">{leads.filter(l => l.status === 'Negociação' || l.status === 'Proposta Enviada').length}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="flex border-b border-gray-100">
+                                <button onClick={() => setActiveTab('clientes')} className={`px-6 py-4 text-sm font-medium ${activeTab === 'clientes' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-500 hover:text-gray-700'}`}>Clientes</button>
+                                <button onClick={() => setActiveTab('leads')} className={`px-6 py-4 text-sm font-medium ${activeTab === 'leads' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-500 hover:text-gray-700'}`}>Leads</button>
+                                <button onClick={() => setActiveTab('novo-cliente')} className={`px-6 py-4 text-sm font-medium ${activeTab === 'novo-cliente' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-500 hover:text-gray-700'}`}>Novo Cliente</button>
+                                <button onClick={() => setActiveTab('novo-lead')} className={`px-6 py-4 text-sm font-medium ${activeTab === 'novo-lead' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-500 hover:text-gray-700'}`}>Novo Lead</button>
+                            </div>
+
+                            <div className="p-6">
+                                {activeTab === 'clientes' && (
+                                    <div className="space-y-4">
+                                        {clientes.map(cliente => (
+                                            <div key={cliente.id} className="p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <i className="lucide-building text-gray-400"></i>
+                                                            <h3 className="font-bold text-gray-900">{cliente.nome}</h3>
+                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(cliente.status)}`}>{cliente.status}</span>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                                            <span className="flex items-center gap-1"><i className="lucide-user text-xs"></i> {cliente.contato}</span>
+                                                            <span className="flex items-center gap-1"><i className="lucide-mail text-xs"></i> {cliente.email}</span>
+                                                            <span className="flex items-center gap-1"><i className="lucide-phone text-xs"></i> {cliente.telefone}</span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-700">{cliente.servicos}</p>
+                                                        {cliente.observacoes && <p className="text-sm text-gray-500 italic">"{cliente.observacoes}"</p>}
+                                                    </div>
+                                                    <div className="text-right text-xs text-gray-400">
+                                                        <p>Início: {new Date(cliente.dataInicio).toLocaleDateString('pt-BR')}</p>
+                                                        <p>ID: {cliente.id}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {activeTab === 'leads' && (
+                                    <div className="space-y-4">
+                                        {leads.map(lead => (
+                                            <div key={lead.id} className="p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <i className="lucide-user-plus text-gray-400"></i>
+                                                            <h3 className="font-bold text-gray-900">{lead.nomeEmpresa}</h3>
+                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>{lead.status}</span>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                                            <span className="flex items-center gap-1"><i className="lucide-user text-xs"></i> {lead.contato}</span>
+                                                            <span className="flex items-center gap-1"><i className="lucide-phone text-xs"></i> {lead.whatsapp}</span>
+                                                            <span className="flex items-center gap-1"><i className="lucide-map-pin text-xs"></i> {lead.cidade}</span>
+                                                            <span className="flex items-center gap-1"><i className="lucide-target text-xs"></i> {lead.origem}</span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-700">Segmento: {lead.segmento}</p>
+                                                        {lead.observacoes && <p className="text-sm text-gray-500 italic">"{lead.observacoes}"</p>}
+                                                    </div>
+                                                    <div className="text-right text-xs text-gray-400">
+                                                        <p>Cadastrado: {new Date(lead.dataCadastro).toLocaleDateString('pt-BR')}</p>
+                                                        <p>ID: {lead.id}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {activeTab === 'novo-cliente' && (
+                                    <div className="max-w-2xl space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Nome da Empresa</label>
+                                                <input type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Nome do Contato</label>
+                                                <input type="text" value={novoCliente.contato} onChange={e => setNovoCliente({...novoCliente, contato: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">E-mail</label>
+                                                <input type="email" value={novoCliente.email} onChange={e => setNovoCliente({...novoCliente, email: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Telefone</label>
+                                                <input type="text" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-sm font-medium text-gray-700">Serviços Contratados</label>
+                                            <input type="text" value={novoCliente.servicos} onChange={e => setNovoCliente({...novoCliente, servicos: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-sm font-medium text-gray-700">Observações</label>
+                                            <textarea value={novoCliente.observacoes} onChange={e => setNovoCliente({...novoCliente, observacoes: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-24"></textarea>
+                                        </div>
+                                        <button onClick={adicionarCliente} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">Salvar Cliente</button>
+                                    </div>
+                                )}
+
+                                {activeTab === 'novo-lead' && (
+                                    <div className="max-w-2xl space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Nome da Empresa</label>
+                                                <input type="text" value={novoLead.nomeEmpresa} onChange={e => setNovoLead({...novoLead, nomeEmpresa: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Nome do Contato</label>
+                                                <input type="text" value={novoLead.contato} onChange={e => setNovoLead({...novoLead, contato: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Segmento</label>
+                                                <input type="text" value={novoLead.segmento} onChange={e => setNovoLead({...novoLead, segmento: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">WhatsApp</label>
+                                                <input type="text" value={novoLead.whatsapp} onChange={e => setNovoLead({...novoLead, whatsapp: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Cidade</label>
+                                                <input type="text" value={novoLead.cidade} onChange={e => setNovoLead({...novoLead, cidade: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Origem</label>
+                                                <input type="text" value={novoLead.origem} onChange={e => setNovoLead({...novoLead, origem: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-sm font-medium text-gray-700">Observações</label>
+                                            <textarea value={novoLead.observacoes} onChange={e => setNovoLead({...novoLead, observacoes: e.target.value})} className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-24"></textarea>
+                                        </div>
+                                        <button onClick={adicionarLead} className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">Salvar Lead</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
 </html>
